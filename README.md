@@ -54,9 +54,11 @@ so each account is judged on the axes that actually apply to it. Three cross-cut
 | `src/types/index.ts` | Explicit, un-nested domain contracts shared by every layer |
 | `src/config/riskParameters.ts` | Single immutable source of all thresholds and weights (no magic numbers) |
 | `src/ingestion/telemetryStreamer.ts` | Streams engineered consumer profiles via an async generator |
-| `src/strategies/underwritingStrategy.ts` | The `UnderwritingStrategy` contract (Strategy pattern) |
-| `src/strategies/alternativeTrack.ts` | Thin-file / no-FICO behavioral model (`TIMS_MIGRATION_POOL`) |
-| `src/strategies/traditionalTrack.ts` | Collateral-backed secured model (`NEO_NATIVE_SECURED`) |
+| `src/features/featureExtractor.ts` | Single source of truth that derives the model-ready `FeatureVector` from raw telemetry (training/serving parity) |
+| `src/strategies/underwritingStrategy.ts` | The `UnderwritingStrategy` contract — consumes a `FeatureVector` (Strategy pattern) |
+| `src/strategies/alternativeTrack.ts` | Thin-file / no-FICO behavioral scorecard (`TIMS_MIGRATION_POOL`) |
+| `src/strategies/traditionalTrack.ts` | Collateral-backed secured scorecard (`NEO_NATIVE_SECURED`) |
+| `src/strategies/modelBackedTrack.ts` | Integration **stub** for an external PD model — the model-agnostic seam (see *ML-readiness* below) |
 | `src/engines/underwritingModel.ts` | Routes telemetry to a strategy; classifies tier; derives reason codes |
 | `src/engines/anomalyDetector.ts` | Deterministic securitization-protection rules |
 | `src/audit/decisionLedger.ts` | Append-only, hash-chained, tamper-evident decision ledger |
@@ -99,6 +101,18 @@ When an outcome is **HIGH** or **DECLINE**, the engine surfaces the limiting fac
 
 ---
 
+## ML-readiness
+
+**There is no trained model in this repository, and the two active tracks are deterministic rule-based scorecards — not ML.** What the codebase demonstrates instead is that the pipeline is *model-agnostic by construction*, so a supervised scorer drops into the existing seam without changing the engine, the audit ledger, or the adverse-action layer:
+
+- **`FeatureExtractor` → `FeatureVector`.** Every strategy consumes a derived `FeatureVector`, not raw telemetry. This is the boundary that, in production, enforces **training/serving parity** — the single most common failure mode in deployed credit models is features computed one way at training time and another at serving time. Centralizing derivation here is the architectural fix.
+- **`ModelBackedUnderwritingStrategy` (stub).** Implements the same `UnderwritingStrategy` contract as the rule tracks, but reads an `externalProbabilityOfDefault` that a model-serving layer (SageMaker / Seldon / BentoML) would populate. It fails *closed* to a conservative PD when no model is present. Swapping a gradient-boosted model (XGBoost/LightGBM) in means implementing this one method — nothing else in the pipeline changes.
+- **SHAP → adverse-action.** The stub documents how per-feature SHAP values map onto the existing `ScoringFactor` / `adverseActionReasons` structures, so an ML decision stays FCAC-compliant with no black-box exceptions: the reason codes a regulator requires fall out of the same disclosure path the rule tracks already use.
+
+The point of the seam is to show the *infrastructure* a production ML credit decision needs — feature parity, a model-agnostic scoring interface, and explainability wired through to compliance — without overclaiming a model that isn't there.
+
+---
+
 ## Securitization guard
 
 Independent of the credit decision, these deterministic rules protect institutional / bank-partner asset pools. The most severe rule wins (a single event yields at most one flag).
@@ -118,7 +132,7 @@ Every decision is committed to an append-only ledger in which each entry embeds 
 
 ## Demonstration profiles
 
-The streamer emits five profiles, each exercising a distinct path:
+The streamer emits **20 engineered profiles** spanning both pools and every decision path — an evenly split portfolio (10 `TIMS_MIGRATION_POOL` / 10 `NEO_NATIVE_SECURED`) producing an 85% approval rate, three CRITICAL and three HIGH securitization flags, and seven thin-file alternative-data inclusions. The five below are the canonical cases each exercising a distinct behavior; the remaining fifteen populate the portfolio KPIs and tier/track distributions shown on the dashboard.
 
 | Account | Pool → Track | Outcome |
 | --- | --- | --- |
@@ -166,7 +180,7 @@ The pool names in this codebase are intentional, not placeholders.
 
 `SecuritizationGuardEngine` reflects the parallel pressure: once a lender structures debt assets into an ABS facility and sells tranches to institutional investors, every transaction in the underlying pool becomes an asset-quality event. Velocity anomalies and unauthorized liquidity extractions (MCC 6011/6051) aren't just fraud — they're events that degrade pool collateral and expose the originator to investor scrutiny. The guard engine runs independent of the credit decision because the two questions — *is this borrower creditworthy?* and *is this transaction safe for our ABS pool?* — have different answerers with different stakes.
 
-**Scope note:** this is a domain-modeled demonstration of the architectural decisions involved, not a production system. It has no ML model, no real data store, and no API surface. Its purpose is to make the engineering trade-offs explicit and testable.
+**Scope note:** this is a domain-modeled demonstration of the architectural decisions involved, not a production system. It ships no trained model (the active tracks are deterministic scorecards — see *ML-readiness*), no real data store, and no API surface. Its purpose is to make the engineering trade-offs explicit and testable.
 
 ---
 
