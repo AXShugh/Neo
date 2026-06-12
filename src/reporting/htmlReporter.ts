@@ -147,25 +147,25 @@ export function renderDashboardHtml(report: PipelineReport): string {
 <title>Neo Risk Underwriting Pipeline — Run Dashboard</title>
 <style>
   :root {
-    --bg:#070c18;
-    --surface:#0d1526;
-    --surface2:#131d33;
-    --surface3:#1b2640;
-    --border:rgba(255,255,255,.06);
-    --border-md:rgba(255,255,255,.10);
-    --text:#dce5f2;
-    --muted:#5e738a;
-    --dim:#3a4d62;
-    --accent:#1a5fd4;
-    --accent-bg:rgba(26,95,212,.18);
-    --ok:#00a86b;
-    --ok-bg:rgba(0,168,107,.13);
-    --bad:#d94f3d;
-    --bad-bg:rgba(217,79,61,.13);
-    --warn:#c9950e;
-    --warn-bg:rgba(201,149,14,.13);
-    --info:#1a5fd4;
-    --info-bg:rgba(26,95,212,.13);
+    --bg:#000000;
+    --surface:#0b0b0b;
+    --surface2:#141414;
+    --surface3:#1e1e1e;
+    --border:rgba(255,255,255,.07);
+    --border-md:rgba(255,255,255,.13);
+    --text:#f4f4f4;
+    --muted:#8c8c8c;
+    --dim:#565656;
+    --accent:#ffffff;
+    --accent-bg:rgba(255,255,255,.10);
+    --ok:#34c27e;
+    --ok-bg:rgba(52,194,126,.13);
+    --bad:#e0584a;
+    --bad-bg:rgba(224,88,74,.14);
+    --warn:#d6a526;
+    --warn-bg:rgba(214,165,38,.14);
+    --info:#c9c9c9;
+    --info-bg:rgba(255,255,255,.08);
     --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,sans-serif;
     --r:4px;
