@@ -156,8 +156,8 @@ export function renderDashboardHtml(report: PipelineReport): string {
     --text:#f4f4f4;
     --muted:#8c8c8c;
     --dim:#565656;
-    --accent:#ffffff;
-    --accent-bg:rgba(255,255,255,.10);
+    --accent:#ff5a36;
+    --accent-bg:rgba(255,90,54,.14);
     --ok:#34c27e;
     --ok-bg:rgba(52,194,126,.13);
     --bad:#e0584a;
@@ -183,6 +183,10 @@ export function renderDashboardHtml(report: PipelineReport): string {
     display:flex;align-items:center;justify-content:space-between;gap:20px;
   }
   .topbar-left{display:flex;align-items:center;gap:0;}
+  .brand-mark{
+    width:9px;height:9px;background:var(--accent);border-radius:2px;
+    margin-right:12px;flex-shrink:0;
+  }
   .product-name{
     font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
     color:var(--text);padding-right:20px;
@@ -335,6 +339,7 @@ export function renderDashboardHtml(report: PipelineReport): string {
 
 <header class="topbar">
   <div class="topbar-left">
+    <span class="brand-mark"></span>
     <span class="product-name">Risk Underwriting Pipeline</span>
     <span class="product-sub">Pool-aware credit decisioning &nbsp;·&nbsp; ABS securitization guard &nbsp;·&nbsp; tamper-evident audit</span>
   </div>
