@@ -1,0 +1,33 @@
+{
+  "name": "neo-risk-underwriting-pipeline",
+  "version": "1.0.0",
+  "description": "Enterprise-grade backend data pipeline for alternative credit underwriting and asset-backed securitization pool protection.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "report": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node --import tsx --test test/underwriting.test.ts test/anomaly.test.ts test/ledger.test.ts test/metrics.test.ts"
+  },
+  "keywords": [
+    "fintech",
+    "underwriting",
+    "risk",
+    "securitization",
+    "anomaly-detection",
+    "alternative-credit"
+  ],
+  "author": "Neo Financial — Principal Financial Software Architect",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/node": "^22.19.21",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

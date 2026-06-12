@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Neo Risk Underwriting Pipeline — Run Dashboard</title>
+<style>
+  :root {
+    --bg:#070c18;
+    --surface:#0d1526;
+    --surface2:#131d33;
+    --surface3:#1b2640;
+    --border:rgba(255,255,255,.06);
+    --border-md:rgba(255,255,255,.10);
+    --text:#dce5f2;
+    --muted:#5e738a;
+    --dim:#3a4d62;
+    --accent:#1a5fd4;
+    --accent-bg:rgba(26,95,212,.18);
+    --ok:#00a86b;
+    --ok-bg:rgba(0,168,107,.13);
+    --bad:#d94f3d;
+    --bad-bg:rgba(217,79,61,.13);
+    --warn:#c9950e;
+    --warn-bg:rgba(201,149,14,.13);
+    --info:#1a5fd4;
+    --info-bg:rgba(26,95,212,.13);
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,sans-serif;
+    --r:4px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.55;}
+
+  /* ── TOP BAR ── */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:var(--surface);
+    border-bottom:1px solid var(--border-md);
+    padding:0 28px;
+    height:52px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+  }
+  .topbar-left{display:flex;align-items:center;gap:0;}
+  .product-name{
+    font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--text);padding-right:20px;
+  }
+  .product-sub{
+    font-size:11px;color:var(--muted);letter-spacing:.03em;
+    border-left:1px solid var(--border-md);padding-left:20px;
+  }
+  .topbar-right{display:flex;align-items:center;gap:16px;flex-shrink:0;}
+  .run-ts{font-size:11px;color:var(--dim);font-family:var(--mono);}
+
+  /* ── BADGE ── */
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    padding:4px 10px;border-radius:3px;white-space:nowrap;
+  }
+  .badge::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .badge.ok{background:var(--ok-bg);color:var(--ok);}
+  .badge.ok::before{background:var(--ok);}
+  .badge.bad{background:var(--bad-bg);color:var(--bad);}
+  .badge.bad::before{background:var(--bad);}
+
+  /* ── LAYOUT ── */
+  .wrap{max-width:1060px;margin:0 auto;padding:28px 28px 56px;}
+
+  /* ── SECTION LABEL ── */
+  .slabel{
+    font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:10px;padding-bottom:8px;
+    border-bottom:1px solid var(--border);
+  }
+
+  /* ── KPI STRIP ── */
+  .kpis{
+    display:grid;grid-template-columns:repeat(5,1fr);
+    gap:1px;background:var(--border-md);
+    border:1px solid var(--border-md);border-radius:var(--r);overflow:hidden;
+    margin-bottom:24px;
+  }
+  .kpi{background:var(--surface);padding:16px 18px;border-left:3px solid transparent;}
+  .kpi.k-accent{border-left-color:var(--accent);}
+  .kpi.k-ok{border-left-color:var(--ok);}
+  .kpi.k-bad{border-left-color:var(--bad);}
+  .kpi.k-warn{border-left-color:var(--warn);}
+  .kpi-label{
+    font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:8px;
+  }
+  .kpi-value{font-size:30px;font-weight:300;letter-spacing:-.02em;color:var(--text);}
+  .kpi-unit{font-size:11px;color:var(--dim);margin-top:3px;}
+
+  /* ── DATA TABLE ── */
+  .dtable{
+    width:100%;border-collapse:collapse;
+    background:var(--surface);
+    border:1px solid var(--border-md);border-radius:var(--r);overflow:hidden;
+    margin-bottom:24px;font-size:12px;
+  }
+  .dtable th{
+    background:var(--surface2);padding:8px 14px;text-align:left;
+    font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--muted);border-bottom:1px solid var(--border-md);white-space:nowrap;
+  }
+  .dtable th.r{text-align:right;}
+  .dtable td{padding:11px 14px;border-bottom:1px solid var(--border);vertical-align:top;}
+  .dtable tr:last-child td{border-bottom:none;}
+  .dtable tr:hover td{background:var(--surface2);}
+  .dtable td.r{text-align:right;}
+
+  .acct-id{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text);}
+  .mono-sm{font-family:var(--mono);font-size:11px;}
+  .dim{color:var(--dim);}
+  .sub-track{font-size:10px;color:var(--dim);letter-spacing:.03em;}
+
+  .reasons{margin:6px 0 0;padding-left:0;list-style:none;}
+  .reasons li{font-size:11px;color:var(--muted);padding:1px 0;}
+  .reasons li::before{content:'—';margin-right:5px;color:var(--dim);}
+
+  .score-cell{font-size:20px;font-weight:300;color:var(--text);}
+
+  .tier{
+    display:inline-block;
+    font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 8px;border-radius:3px;white-space:nowrap;
+  }
+  .tier.ok{background:var(--ok-bg);color:var(--ok);}
+  .tier.info{background:var(--info-bg);color:var(--info);}
+  .tier.warn{background:var(--warn-bg);color:var(--warn);}
+  .tier.bad{background:var(--bad-bg);color:var(--bad);}
+
+  .flag{
+    display:inline-block;
+    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:3px 8px;border-radius:3px;white-space:nowrap;
+  }
+  .flag.crit{background:var(--bad-bg);color:var(--bad);}
+  .flag.high{background:var(--warn-bg);color:var(--warn);}
+  .flag.clean{color:var(--dim);font-weight:400;letter-spacing:0;text-transform:none;font-size:13px;}
+
+  /* ── TWO-COL ── */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border-md);border-radius:var(--r);
+    padding:18px 20px;
+  }
+
+  /* ── BAR CHART ── */
+  .bar-row{display:flex;align-items:center;gap:10px;margin:10px 0;font-size:11px;}
+  .bar-label{
+    width:136px;color:var(--muted);font-family:var(--mono);font-size:10px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .bar-track{flex:1;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+  .bar-fill{display:block;height:4px;border-radius:2px;}
+  .bar-fill.ok{background:var(--ok);}
+  .bar-fill.info{background:var(--info);}
+  .bar-fill.warn{background:var(--warn);}
+  .bar-fill.bad{background:var(--bad);}
+  .bar-count{width:20px;text-align:right;color:var(--muted);}
+  .bar-pct{width:32px;text-align:right;color:var(--dim);font-size:10px;}
+
+  .anomaly-summary{
+    margin-top:14px;padding-top:12px;border-top:1px solid var(--border);
+    font-size:11px;color:var(--muted);display:flex;gap:16px;
+  }
+  .anomaly-summary span{display:flex;align-items:center;gap:5px;}
+  .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+  .dot.bad{background:var(--bad);}
+  .dot.warn{background:var(--warn);}
+
+  /* ── LEDGER ── */
+  .ledger-hash{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .verified{
+    font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ok);
+  }
+
+  /* ── FOOTER ── */
+  footer{
+    margin-top:12px;padding-top:20px;border-top:1px solid var(--border);
+    font-size:11px;color:var(--dim);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  footer code{font-family:var(--mono);color:var(--muted);}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <span class="product-name">Risk Underwriting Pipeline</span>
+    <span class="product-sub">Pool-aware credit decisioning &nbsp;·&nbsp; ABS securitization guard &nbsp;·&nbsp; tamper-evident audit</span>
+  </div>
+  <div class="topbar-right">
+    <span class="run-ts">2026-06-12T01:26:58.288Z</span>
+    <span class="badge ok">Audit Chain Verified</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="kpis">
+    <div class="kpi k-accent">
+      <div class="kpi-label">Events Processed</div>
+      <div class="kpi-value">20</div>
+      <div class="kpi-unit">this run</div>
+    </div>
+    <div class="kpi k-ok">
+      <div class="kpi-label">Approval Rate</div>
+      <div class="kpi-value">85%</div>
+      <div class="kpi-unit">non-declined</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">Decline Rate</div>
+      <div class="kpi-value">15%</div>
+      <div class="kpi-unit">declined</div>
+    </div>
+    <div class="kpi k-bad">
+      <div class="kpi-label">Critical Flags</div>
+      <div class="kpi-value">3</div>
+      <div class="kpi-unit">securitization alerts</div>
+    </div>
+    <div class="kpi k-accent">
+      <div class="kpi-label">Alt-Data Inclusions</div>
+      <div class="kpi-value">7</div>
+      <div class="kpi-unit">thin-file approvals</div>
+    </div>
+  </section>
+
+  <div class="slabel">Decision Feed</div>
+  <table class="dtable">
+    <thead>
+      <tr>
+        <th>Account</th>
+        <th>Pool &nbsp;·&nbsp; Track</th>
+        <th class="r">Amount</th>
+        <th class="r">Score</th>
+        <th>Tier</th>
+        <th class="r">Guard Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <td>
+          <span class="acct-id">ALT_CREDIT_001</span>
+          
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$150.00</td>
+        <td class="r score-cell">100</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">STD_CREDIT_002</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$85.00</td>
+        <td class="r score-cell">85</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">FRAUD_BUST_OUT_003</span>
+          <ul class="reasons"><li>Cash reserve ratio below 1.0x minimum threshold</li><li>Fewer than 13 months of qualifying rent history</li></ul>
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$4500.00</td>
+        <td class="r score-cell">30</td>
+        <td><span class="tier bad">DECLINE</span></td>
+        <td class="r"><span class="flag crit">CRITICAL&nbsp;·&nbsp;VELOCITY_BUST_OUT</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">CASH_OUT_LEAK_004</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$2500.00</td>
+        <td class="r score-cell">80</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag high">HIGH&nbsp;·&nbsp;CASH_OUT_LEAK</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">EDGE_BOUNDARY_005</span>
+          <ul class="reasons"><li>Fewer than 13 months of qualifying rent history</li><li>Cash reserves adequate but below 3.0x bonus threshold</li></ul>
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$200.00</td>
+        <td class="r score-cell">50</td>
+        <td><span class="tier warn">HIGH</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">TIMS_ALT_006</span>
+          
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$85.00</td>
+        <td class="r score-cell">100</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">TIMS_ALT_007</span>
+          
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$55.00</td>
+        <td class="r score-cell">75</td>
+        <td><span class="tier info">MEDIUM</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">TIMS_ALT_008</span>
+          
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$42.00</td>
+        <td class="r score-cell">75</td>
+        <td><span class="tier info">MEDIUM</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">TIMS_ALT_009</span>
+          <ul class="reasons"><li>Cash reserve ratio below 1.0x minimum threshold</li><li>Fewer than 13 months of qualifying rent history</li></ul>
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$35.00</td>
+        <td class="r score-cell">30</td>
+        <td><span class="tier bad">DECLINE</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">TIMS_ALT_010</span>
+          <ul class="reasons"><li>Fewer than 13 months of qualifying rent history</li><li>Cash reserves adequate but below 3.0x bonus threshold</li></ul>
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$75.00</td>
+        <td class="r score-cell">50</td>
+        <td><span class="tier warn">HIGH</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">TIMS_ALT_011</span>
+          
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$2200.00</td>
+        <td class="r score-cell">100</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag high">HIGH&nbsp;·&nbsp;CASH_OUT_LEAK</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">TIMS_ALT_012</span>
+          <ul class="reasons"><li>Cash reserve ratio below 1.0x minimum threshold</li><li>Fewer than 13 months of qualifying rent history</li></ul>
+        </td>
+        <td class="mono-sm">TIMS_MIGRATION_POOL<br><span class="sub-track">ALTERNATIVE_DATA_V1</span></td>
+        <td class="r mono-sm">$3500.00</td>
+        <td class="r score-cell">30</td>
+        <td><span class="tier bad">DECLINE</span></td>
+        <td class="r"><span class="flag crit">CRITICAL&nbsp;·&nbsp;VELOCITY_BUST_OUT</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">SEC_NATIVE_013</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$95.00</td>
+        <td class="r score-cell">90</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">SEC_NATIVE_014</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$110.00</td>
+        <td class="r score-cell">85</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">SEC_NATIVE_015</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$180.00</td>
+        <td class="r score-cell">75</td>
+        <td><span class="tier info">MEDIUM</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">SEC_NATIVE_016</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$320.00</td>
+        <td class="r score-cell">80</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">SEC_NATIVE_017</span>
+          <ul class="reasons"><li>Cash reserve ratio below 1.0x minimum threshold</li></ul>
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$60.00</td>
+        <td class="r score-cell">55</td>
+        <td><span class="tier warn">HIGH</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">SEC_NATIVE_018</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$2900.00</td>
+        <td class="r score-cell">85</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag crit">CRITICAL&nbsp;·&nbsp;VELOCITY_BUST_OUT</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">SEC_NATIVE_019</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$2300.00</td>
+        <td class="r score-cell">80</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag high">HIGH&nbsp;·&nbsp;CASH_OUT_LEAK</span></td>
+      </tr>
+      <tr>
+        <td>
+          <span class="acct-id">SEC_NATIVE_020</span>
+          
+        </td>
+        <td class="mono-sm">NEO_NATIVE_SECURED<br><span class="sub-track">TRADITIONAL_SECURED_V1</span></td>
+        <td class="r mono-sm">$370.00</td>
+        <td class="r score-cell">90</td>
+        <td><span class="tier ok">LOW</span></td>
+        <td class="r"><span class="flag clean">—</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="cols">
+    <div class="card">
+      <div class="slabel">Risk Tier Distribution</div>
+      
+      <div class="bar-row">
+        <span class="bar-label">LOW</span>
+        <span class="bar-track"><span class="bar-fill ok" style="width:55%"></span></span>
+        <span class="bar-count">11</span>
+        <span class="bar-pct">55%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">MEDIUM</span>
+        <span class="bar-track"><span class="bar-fill info" style="width:15%"></span></span>
+        <span class="bar-count">3</span>
+        <span class="bar-pct">15%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">HIGH</span>
+        <span class="bar-track"><span class="bar-fill warn" style="width:15%"></span></span>
+        <span class="bar-count">3</span>
+        <span class="bar-pct">15%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">DECLINE</span>
+        <span class="bar-track"><span class="bar-fill bad" style="width:15%"></span></span>
+        <span class="bar-count">3</span>
+        <span class="bar-pct">15%</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="slabel">Underwriting Track</div>
+      
+      <div class="bar-row">
+        <span class="bar-label">ALTERNATIVE_DATA_V1</span>
+        <span class="bar-track"><span class="bar-fill info" style="width:50%"></span></span>
+        <span class="bar-count">10</span>
+        <span class="bar-pct">50%</span>
+      </div>
+      <div class="bar-row">
+        <span class="bar-label">TRADITIONAL_SECURED_V1</span>
+        <span class="bar-track"><span class="bar-fill info" style="width:50%"></span></span>
+        <span class="bar-count">10</span>
+        <span class="bar-pct">50%</span>
+      </div>
+      <div class="anomaly-summary">
+        <span><span class="dot bad"></span>3 critical velocity alerts</span>
+        <span><span class="dot warn"></span>3 high cash-out flags</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="slabel">Audit Ledger &mdash; Hash-chained, genesis-anchored</div>
+  <table class="dtable">
+    <thead>
+      <tr>
+        <th>Seq</th>
+        <th>Decision ID</th>
+        <th>Account</th>
+        <th>Prev Hash (truncated)</th>
+        <th class="r">Integrity</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <td class="mono-sm dim">1</td>
+        <td><span class="ledger-hash">DEC-D7AB04FE4A18</span></td>
+        <td class="mono-sm">ALT_CREDIT_001</td>
+        <td><span class="ledger-hash">0000000000000000&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">2</td>
+        <td><span class="ledger-hash">DEC-DD812F8AC0DA</span></td>
+        <td class="mono-sm">STD_CREDIT_002</td>
+        <td><span class="ledger-hash">52e18601a3861a6b&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">3</td>
+        <td><span class="ledger-hash">DEC-022D401D9803</span></td>
+        <td class="mono-sm">FRAUD_BUST_OUT_003</td>
+        <td><span class="ledger-hash">19c9bf6c13000729&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">4</td>
+        <td><span class="ledger-hash">DEC-C16A25529492</span></td>
+        <td class="mono-sm">CASH_OUT_LEAK_004</td>
+        <td><span class="ledger-hash">c063e91c76ea3b44&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">5</td>
+        <td><span class="ledger-hash">DEC-06672F22DB8A</span></td>
+        <td class="mono-sm">EDGE_BOUNDARY_005</td>
+        <td><span class="ledger-hash">e45ad92bb689dc9d&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">6</td>
+        <td><span class="ledger-hash">DEC-6FD556F90519</span></td>
+        <td class="mono-sm">TIMS_ALT_006</td>
+        <td><span class="ledger-hash">57383f954d78afa0&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">7</td>
+        <td><span class="ledger-hash">DEC-99AB83867E88</span></td>
+        <td class="mono-sm">TIMS_ALT_007</td>
+        <td><span class="ledger-hash">04aceb5e5605131e&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">8</td>
+        <td><span class="ledger-hash">DEC-6D3179EABA2F</span></td>
+        <td class="mono-sm">TIMS_ALT_008</td>
+        <td><span class="ledger-hash">2e01b0c2e7a73725&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">9</td>
+        <td><span class="ledger-hash">DEC-EFA25E5DD5FF</span></td>
+        <td class="mono-sm">TIMS_ALT_009</td>
+        <td><span class="ledger-hash">a0c7317f594cf57e&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">10</td>
+        <td><span class="ledger-hash">DEC-8F353D453D51</span></td>
+        <td class="mono-sm">TIMS_ALT_010</td>
+        <td><span class="ledger-hash">fab1e4ff03948512&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">11</td>
+        <td><span class="ledger-hash">DEC-F3403B20684D</span></td>
+        <td class="mono-sm">TIMS_ALT_011</td>
+        <td><span class="ledger-hash">316f5c24957ae2f7&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">12</td>
+        <td><span class="ledger-hash">DEC-11CFAD0185F7</span></td>
+        <td class="mono-sm">TIMS_ALT_012</td>
+        <td><span class="ledger-hash">ec73b2998e7249fc&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">13</td>
+        <td><span class="ledger-hash">DEC-72F130FC9626</span></td>
+        <td class="mono-sm">SEC_NATIVE_013</td>
+        <td><span class="ledger-hash">b2367dee7453f9a4&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">14</td>
+        <td><span class="ledger-hash">DEC-70C730675AD7</span></td>
+        <td class="mono-sm">SEC_NATIVE_014</td>
+        <td><span class="ledger-hash">9bc7f9481c3044e7&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">15</td>
+        <td><span class="ledger-hash">DEC-48A2D8397F17</span></td>
+        <td class="mono-sm">SEC_NATIVE_015</td>
+        <td><span class="ledger-hash">4a14aec4de82e370&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">16</td>
+        <td><span class="ledger-hash">DEC-2FDD7B824755</span></td>
+        <td class="mono-sm">SEC_NATIVE_016</td>
+        <td><span class="ledger-hash">d3282539f51e0961&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">17</td>
+        <td><span class="ledger-hash">DEC-8D05E989D67A</span></td>
+        <td class="mono-sm">SEC_NATIVE_017</td>
+        <td><span class="ledger-hash">90488beacd1da81c&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">18</td>
+        <td><span class="ledger-hash">DEC-284E4F3A70E8</span></td>
+        <td class="mono-sm">SEC_NATIVE_018</td>
+        <td><span class="ledger-hash">2661bbad5eef219c&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">19</td>
+        <td><span class="ledger-hash">DEC-72DF35456EF5</span></td>
+        <td class="mono-sm">SEC_NATIVE_019</td>
+        <td><span class="ledger-hash">300e67d8f8ac96eb&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+      <tr>
+        <td class="mono-sm dim">20</td>
+        <td><span class="ledger-hash">DEC-B6B6B9FA67A7</span></td>
+        <td class="mono-sm">SEC_NATIVE_020</td>
+        <td><span class="ledger-hash">6438db232ee11702&hellip;</span></td>
+        <td class="r"><span class="verified">Verified</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <footer>
+    <span>Generated by <code>neo-risk-underwriting-pipeline</code> &nbsp;·&nbsp; zero runtime dependencies</span>
+    <span>20 ledger entries &nbsp;·&nbsp; integrity verified</span>
+  </footer>
+
+</main>
+</body>
+</html>
