@@ -145,6 +145,11 @@ export function renderDashboardHtml(report: PipelineReport): string {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Neo Risk Underwriting Pipeline — Run Dashboard</title>
+<meta name="description" content="Pool-aware credit decisioning and ABS pool protection. One real run: 20 decisions, 85% approved, 3 critical flags, a verified audit chain." />
+<meta property="og:title" content="Neo Risk Underwriting Pipeline" />
+<meta property="og:description" content="Pool-aware credit decisioning and ABS pool protection. One real run: 20 decisions, 85% approved, 3 critical flags, a verified audit chain." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://axshugh.github.io/Neo/" />
 <style>
   :root {
     --bg:#000000;
@@ -333,6 +338,54 @@ export function renderDashboardHtml(report: PipelineReport): string {
     display:flex;justify-content:space-between;align-items:center;
   }
   footer code{font-family:var(--mono);color:var(--muted);}
+
+  /* ── EXEC SUMMARY BAND ── */
+  .exec-band{
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:18px 28px;
+    display:flex;align-items:baseline;justify-content:space-between;gap:24px;
+  }
+  .exec-band-body{display:flex;align-items:baseline;gap:14px;flex:1;min-width:0;}
+  .exec-band-dot{width:5px;height:5px;background:var(--accent);border-radius:1px;flex-shrink:0;position:relative;top:-1px;}
+  .exec-band-label{
+    font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;
+  }
+  .exec-band-text{
+    font-size:14px;line-height:1.6;color:var(--text);max-width:70ch;
+  }
+  .exec-band-links{display:flex;align-items:center;gap:20px;flex-shrink:0;white-space:nowrap;}
+  .exec-band-links a{
+    font-size:12px;color:var(--muted);text-decoration:none;
+    transition:color .15s;
+  }
+  .exec-band-links a:hover{color:var(--accent);}
+
+  /* ── MOBILE ── */
+  @media (max-width:720px){
+    .topbar{
+      height:auto;padding:12px 16px;flex-wrap:wrap;gap:8px;
+    }
+    .topbar-left{flex-wrap:wrap;gap:8px;}
+    .product-sub{border-left:none;padding-left:0;}
+    .topbar-right{gap:10px;}
+
+    .exec-band{
+      flex-direction:column;align-items:flex-start;gap:12px;padding:14px 16px;
+    }
+    .exec-band-body{flex-wrap:wrap;gap:8px;}
+    .exec-band-text{font-size:13px;}
+    .exec-band-links{gap:14px;}
+
+    .wrap{padding:16px 16px 40px;}
+
+    .kpis{grid-template-columns:repeat(2,1fr);}
+
+    .cols{grid-template-columns:1fr;}
+
+    .dtable{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  }
 </style>
 </head>
 <body>
@@ -348,6 +401,18 @@ export function renderDashboardHtml(report: PipelineReport): string {
     ${integrityBadge}
   </div>
 </header>
+
+<div class="exec-band">
+  <div class="exec-band-body">
+    <span class="exec-band-dot"></span>
+    <span class="exec-band-label">What this run shows</span>
+    <p class="exec-band-text">A working underwriting pipeline that scores thin-file co-brand migrants on behavioral data instead of a FICO trail, and screens every transaction to protect an ABS pool. The 20 decisions below — 85% approved, 3 critical flags, a verified audit chain — are one real run you can re-execute from the repo.</p>
+  </div>
+  <div class="exec-band-links">
+    <a href="brief.html">Read the brief &rarr;</a>
+    <a href="https://github.com/AXShugh/Neo" target="_blank" rel="noopener">View the code &rarr;</a>
+  </div>
+</div>
 
 <main class="wrap">
 

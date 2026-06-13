@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Neo — Underwriting the thin file, protecting the pool</title>
+<meta name="description" content="A working prototype: score thin-file co-brand migrants on behavioral data, screen every transaction to protect the ABS pool. With KPIs I would track." />
+<meta property="og:title" content="Underwriting the thin file, protecting the pool" />
+<meta property="og:description" content="A working prototype: score thin-file co-brand migrants on behavioral data, screen every transaction to protect the ABS pool. With KPIs I would track." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://axshugh.github.io/Neo/brief.html" />
+<style>
+  :root {
+    --bg:#000000;
+    --surface:#0b0b0b;
+    --surface2:#141414;
+    --border:rgba(255,255,255,.07);
+    --border-md:rgba(255,255,255,.13);
+    --text:#f4f4f4;
+    --muted:#8c8c8c;
+    --dim:#565656;
+    --accent:#ff5a36;
+    --mono:'SF Mono',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,Roboto,sans-serif;
+    --r:4px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:var(--sans);font-size:15px;line-height:1.7;
+  }
+
+  /* ── TOP NAV ── */
+  .topbar{
+    position:sticky;top:0;z-index:20;
+    background:var(--surface);
+    border-bottom:1px solid var(--border-md);
+    padding:0 28px;height:52px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .back-link{
+    font-size:11px;color:var(--muted);text-decoration:none;
+    letter-spacing:.03em;
+    transition:color .15s;
+  }
+  .back-link:hover{color:var(--accent);}
+  .topbar-brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:9px;height:9px;background:var(--accent);border-radius:2px;flex-shrink:0;
+  }
+  .brand-name{
+    font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);
+  }
+
+  /* ── LAYOUT ── */
+  .wrap{
+    max-width:680px;margin:0 auto;
+    padding:64px 28px 96px;
+  }
+
+  /* ── HEADER ── */
+  .page-header{margin-bottom:48px;}
+  .title-row{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+  .title-mark{
+    width:12px;height:12px;background:var(--accent);border-radius:2px;flex-shrink:0;
+  }
+  h1{
+    font-size:26px;font-weight:400;letter-spacing:-.02em;
+    color:var(--text);line-height:1.25;
+  }
+  .subtitle{
+    font-size:15px;color:var(--muted);line-height:1.5;
+    padding-left:26px;
+  }
+
+  /* ── SECTIONS ── */
+  .section{margin-bottom:40px;}
+  .section-label{
+    font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:14px;padding-bottom:10px;
+    border-bottom:1px solid var(--border);
+  }
+  p{color:var(--text);margin-bottom:1em;}
+  p:last-child{margin-bottom:0;}
+
+  /* ── METRICS LIST ── */
+  ul.metrics{list-style:none;padding:0;}
+  ul.metrics li{
+    padding:12px 0;border-bottom:1px solid var(--border);
+    font-size:14px;color:var(--text);line-height:1.6;
+  }
+  ul.metrics li:last-child{border-bottom:none;}
+  ul.metrics li strong{color:var(--text);font-weight:600;}
+  ul.metrics li::before{
+    content:'';display:inline-block;
+    width:4px;height:4px;background:var(--accent);border-radius:1px;
+    margin-right:10px;vertical-align:middle;position:relative;top:-1px;
+  }
+
+  /* ── SIGNATURE ── */
+  .signature{
+    margin-top:56px;padding-top:24px;
+    border-top:1px solid var(--border);
+    font-size:13px;color:var(--muted);
+  }
+  .signature p{color:var(--muted);}
+  .signature a{
+    color:var(--muted);text-decoration:none;
+    transition:color .15s;
+  }
+  .signature a:hover{color:var(--accent);}
+
+  /* ── MOBILE ── */
+  @media (max-width:600px){
+    .topbar{padding:0 16px;}
+    .wrap{padding:40px 16px 64px;}
+    h1{font-size:22px;}
+    .subtitle{padding-left:0;margin-top:8px;}
+    .title-row{flex-wrap:wrap;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="back-link" href="./">&larr; Back to dashboard</a>
+  <div class="topbar-brand">
+    <span class="brand-mark"></span>
+    <span class="brand-name">Risk Underwriting Pipeline</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <header class="page-header">
+    <div class="title-row">
+      <span class="title-mark"></span>
+      <h1>Underwriting the thin file, protecting the pool</h1>
+    </div>
+    <p class="subtitle">A working prototype of pool-aware credit decisioning and securitization protection.</p>
+  </header>
+
+  <section class="section">
+    <div class="section-label">The problem</div>
+    <p>A single scoring function cannot serve structurally different credit products. A thin-file migrant and a collateral-backed secured borrower carry different economics and expose different signals. Score the migrant on a traditional model and you manufacture false declines — you reject good borrowers and abandon the inclusion thesis. This pipeline lets the tenant pool select the underwriting strategy, so each account is judged on the axes that actually apply to it: rent discipline and reserves for the thin file, collateral and stability for the secured borrower.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Why now</div>
+    <p>Two pressures are arriving together. Co-brand portfolio migrations are handing acquiring lenders large populations with real transaction history but no FICO trail at the new institution — thin files that legacy policy declines by default. At the same time, structuring those assets into a securitization facility turns every transaction in the underlying pool into an asset-quality event. Velocity anomalies and unauthorized liquidity extraction stop being only fraud; they degrade collateral and invite investor scrutiny. Underwriting and pool protection now answer to different stakeholders at the same time.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-label">The approach</div>
+    <p>Two deterministic scorecards behind one model-agnostic interface — a supervised scorer drops into the same seam without touching the engine, the ledger, or the disclosure layer. A securitization guard runs independent of the credit decision: a transaction can be approved on merit yet flagged for the pool. Every decision emits adverse-action reason codes and commits to a hash-chained, tamper-evident ledger, verified live at the end of each run.</p>
+  </section>
+
+  <section class="section">
+    <div class="section-label">What I would measure</div>
+    <p>If I owned this product, the dashboard I would watch:</p>
+    <ul class="metrics">
+      <li><strong>False-decline rate on thin-file applicants</strong> — the direct cost of a wrong policy; every one is a good borrower and lost revenue.</li>
+      <li><strong>Approval-rate lift vs a FICO-only policy</strong> — quantifies the inclusion thesis in dollars, not sentiment.</li>
+      <li><strong>Flagged-transaction precision</strong> — guard flags that survive review; low precision burns analyst time and erodes trust in the control.</li>
+      <li><strong>Time-to-decision</strong> — latency is conversion at the point of application and a hard requirement at securitization scale.</li>
+      <li><strong>Adverse-action coverage</strong> — share of declines carrying a complete, regulator-ready reason set; a compliance floor, not a metric to optimize past.</li>
+    </ul>
+  </section>
+
+  <div class="signature">
+    <p>Hugh Rea</p>
+    <p>
+      <a href="https://github.com/AXShugh/Neo" target="_blank" rel="noopener">https://github.com/AXShugh/Neo</a>
+      &nbsp;&middot;&nbsp;
+      <a href="https://axshugh.github.io/Neo/">https://axshugh.github.io/Neo/</a>
+    </p>
+  </div>
+
+</main>
+</body>
+</html>

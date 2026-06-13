@@ -1,7 +1,7 @@
 /**
  * @fileoverview Securitization guard (anomaly detection) engine.
  *
- * Protects institutional and bank-partner (e.g., BMO) asset credit pools from
+ * Protects institutional and bank-partner asset credit pools from
  * sudden credit events, fraud, and compliance degradation — independently of the
  * creditworthiness decision. A transaction can be approved on credit merit yet
  * still be flagged here for compliance review; the two layers answer different
